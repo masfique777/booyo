@@ -13,9 +13,11 @@ It's meant for learning at home (vacations, homeschooling, a quiet half hour).
   relative (`./index.html`, `sw.js`, `icons/...`) and the manifest uses `start_url`/`scope` `./`, so the app works under `/booyo/`
   and at a domain root.
 
-### Using a custom domain later (booyo.app), CNAME-ready
-Nothing in the app needs to change. When the domain is bought:
-1. At the domain registrar, add DNS records for the apex `booyo.app`: four `A` records to `185.199.108.153`, `185.199.109.153`,
+### Custom domain booyo.app (CNAME-ready)
+Nothing in the app needs to change: every path is relative, so the same files work at https://booyo.app/ (root) and at
+https://masfique777.github.io/booyo/ (which GitHub redirects to booyo.app once the domain is set). The domain was bought on Porkbun on
+October 4, 2026. Steps (`/workspace/booyo-launch/switch-to-booyo-app.sh` does 2 automatically once DNS is right):
+1. At Porkbun, **delete the default parking records** (an `ALIAS`/`A` for the apex and a `CNAME` for `www` to `pixie.porkbun.com`), then add DNS records for the apex `booyo.app`: four `A` records to `185.199.108.153`, `185.199.109.153`,
    `185.199.110.153`, `185.199.111.153` (and optionally `AAAA` records `2606:50c0:8000::153`, `…8001::153`, `…8002::153`, `…8003::153`),
    plus a `CNAME` record for `www` pointing to `masfique777.github.io`.
 2. In the repo: Settings → Pages → Custom domain → `booyo.app` (GitHub adds a `CNAME` file containing `booyo.app`), wait for the
