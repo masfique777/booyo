@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#00bec0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Booyo · Privacy</title>
+  <link rel="icon" href="icons/favicon.ico" sizes="16x16 32x32 48x48">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
+  <style>
+    :root { --teal: #00bec0; --teal-d: #00777a; --teal-ink: #00585c; --sun: #ffc93c; --sun-l: #fff3c9; --teal-l: #dff5f4; --ink: #263238; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font: 18px/1.6 "Nunito", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif; color: var(--ink);
+      background: linear-gradient(160deg, #fffcf2, #e9f7f6) fixed; }
+    header { background: var(--teal); color: #fff; padding: 22px 20px 26px; text-align: center; border-radius: 0 0 36px 36px; }
+    header img { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 6px 16px rgba(0,0,0,.18); }
+    header h1 { margin: 10px 0 2px; font-size: clamp(28px, 6vw, 40px); line-height: 1.2; }
+    header p { margin: 0; font-size: 19px; color: #003b3d; font-weight: 700; }
+    main { max-width: 760px; margin: 0 auto; padding: 18px 16px 40px; }
+    .short { background: var(--sun-l); border: 3px solid var(--sun); border-radius: 24px; padding: 16px 20px; margin: 4px 0 18px; }
+    .short h2 { margin: 0 0 6px; }
+    .short ul { margin: 0; padding-left: 4px; list-style: none; }
+    .short li { margin: 6px 0; }
+    section { background: #fff; border-radius: 24px; padding: 16px 22px; margin: 14px 0; box-shadow: 0 4px 14px rgba(0,60,62,.08); }
+    h2 { font-size: 23px; color: var(--teal-ink); margin: 6px 0 8px; line-height: 1.3; }
+    ul { padding-left: 22px; } li { margin: 4px 0; }
+    code { background: var(--teal-l); border-radius: 6px; padding: 1px 6px; font-size: 16px; }
+    a { color: var(--teal-d); font-weight: 700; }
+    .back { display: inline-block; margin: 6px 0 4px; background: var(--teal-d); color: #fff; text-decoration: none; border-radius: 999px; padding: 12px 22px; font-weight: 800; }
+    .back:focus-visible, a:focus-visible { outline: 4px solid var(--sun); outline-offset: 3px; }
+    .note { font-size: 16px; color: #455a64; }
+    footer { text-align: center; font-size: 15px; color: #455a64; padding: 10px 16px 30px; }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="icons/icon-192.png" alt="" width="192" height="192">
+    <h1>Booyo's privacy promise</h1>
+    <p>Simple words for grown-ups</p>
+  </header>
+  <main>
+    <a class="back" href="./index.html">⬅ Back to Booyo</a>
+    <p class="note">Last updated: October 4, 2026</p>
+
+    <div class="short">
+      <h2>🦉 The short version</h2>
+      <ul>
+        <li>✅ No accounts, no sign-up, no ads, no in-app purchases.</li>
+        <li>✅ No analytics and no tracking of any kind.</li>
+        <li>✅ Everything your family makes in Booyo (settings, progress, recordings, stories) stays <b>on your device</b>.</li>
+        <li>✅ Booyo does not send your child's information anywhere. We never see it.</li>
+      </ul>
+    </div>
+
+    <section>
+      <h2>What Booyo keeps, and where</h2>
+      <p>Booyo saves a few things so it can remember your child between visits. All of it is stored <b>only in this browser on this device</b>:</p>
+      <ul>
+        <li><b>Settings</b> you choose in the Parent corner, such as an optional first name or nickname, the age band, the daily time limit and Booyo's voice (browser <code>localStorage</code>).</li>
+        <li><b>Progress</b>: stars, which activities were played, today's play time and short session reports (<code>localStorage</code>).</li>
+        <li><b>Family Voices</b> recordings made by a grown-up, and <b>Make a Story</b> stories, including any voice clip your child records for a story (the browser's <code>IndexedDB</code> database on this device).</li>
+        <li>A copy of Booyo's own app files, so it works offline (the browser's app cache). These are the app itself and contain nothing about your child.</li>
+      </ul>
+      <p>The name is optional. Booyo never asks for a last name, birthday, address, email, phone number, photo or location.</p>
+    </section>
+
+    <section>
+      <h2>No network calls with your data</h2>
+      <ul>
+        <li>After Booyo loads, its strict security settings (a Content-Security-Policy) block it from connecting to any other website or server. The only requests it makes are to re-check Booyo's own app files for updates.</li>
+        <li>There are no analytics, advertising, social-media or tracking tools in Booyo, and no cookies.</li>
+        <li>The microphone turns on only when a grown-up taps <b>Record</b> in Family Voices, or when your child holds the microphone button in Make a Story or Sing My Story. Recordings are saved on the device and are never uploaded.</li>
+        <li>Booyo's website is hosted on GitHub Pages. Like any website host, GitHub may keep standard technical logs (such as an IP address) when the app files are downloaded. Booyo doesn't receive or use these logs.</li>
+        <li>Booyo talks using your device's built-in text-to-speech voice. Booyo prefers on-device voices. If your device uses an "online" voice, your browser or device maker may process the words Booyo speaks (such as "Great job, Maya!"). You can choose an on-device voice in Parent corner → Play settings → Booyo's voice → More options.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Sharing is up to you</h2>
+      <p>Booyo can make files for you: a Family Voices <code>.booyovoice</code> pack, a story book, or a song. These files are saved to your device, and they go only where <b>you</b> choose to send them (for example by WhatsApp, email or AirDrop). Booyo never sends them for you.</p>
+    </section>
+
+    <section>
+      <h2>Children's privacy (COPPA)</h2>
+      <p>Booyo is made for children aged 2 to 6. In plain words: <b>Booyo does not collect personal information from children.</b> Nothing your child does in Booyo is sent to us or to anyone else, so we have nothing to collect, sell or share. Kid mode has no links, ads, purchases, chat or typing, and leaving it needs a grown-up check.</p>
+    </section>
+
+    <section>
+      <h2>How to delete Booyo's data</h2>
+      <ul>
+        <li><b>One thing at a time:</b> in the Parent corner, use the 🗑️ buttons in <b>Family Voices</b> (a single line or a whole voice) and in <b>My Stories</b> (a story).</li>
+        <li><b>Everything at once:</b> remove Booyo from your home screen, and clear this website's data in your browser (for example, Chrome: Settings → Site settings → All sites → this site → Delete data; Safari on iPhone/iPad: Settings → Safari → Advanced → Website Data → find the site → Delete).</li>
+        <li>Because everything lives on your device, deleting it there removes it completely. We have no copy.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Who made Booyo</h2>
+      <p>Booyo is a small family project, made by a dad and his 9-year-old son for home learning. It's free.</p>
+      <p>Questions or worries? Email <a href="mailto:masfique@gmail.com">masfique@gmail.com</a>.</p>
+    </section>
+
+    <p class="note">This page explains how Booyo works in everyday words. It is not legal advice. If anything about how Booyo handles information changes, we will update this page and the date at the top.</p>
+    <a class="back" href="./index.html">⬅ Back to Booyo</a>
+  </main>
+  <footer>Booyo · works offline · no ads · no tracking · <a href="./index.html">Open Booyo</a></footer>
+</body>
+</html>
