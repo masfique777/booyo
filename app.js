@@ -907,10 +907,10 @@
 
     var privacy = card('🔐 Privacy & safety', '',
       h('ul', { class: 'plain' },
-        h('li', {}, 'Everything is stored only on this device (browser localStorage, and IndexedDB for Family Voices recordings). No accounts, no ads, no tracking, no uploads, no internet needed.'),
+        h('li', {}, 'Everything is stored only on this device (browser localStorage, and IndexedDB for Family Voices recordings and saved stories). No accounts, no ads, no tracking, no uploads, no internet needed.'),
         h('li', {}, 'Kid mode has no links, ads, purchases or typing. Leaving kid mode needs this grown-up check (hold 3 seconds + a math question). A wrong answer closes it and locks it for 30 seconds.'),
         h('li', {}, 'Guided mode needs no grown-up mid-session: it ends by itself at the daily limit, and pauses (timer stopped) if nobody taps for about 2 minutes.'),
-        h('li', {}, 'Still lock the device to this app (see the setup tips below): a browser can\'t stop a child from pressing the Home button.'),
+        h('li', {}, 'Still lock the device to this app (see the setup tips above): a browser can\'t stop a child from pressing the Home button.'),
         h('li', { id: 'offlineStatus' }, offlineStatusText())),
       h('p', {}, h('a', { href: 'privacy.html', target: '_blank', rel: 'noopener', id: 'privacyLink', class: 'plink' }, '📄 Read Booyo\'s full privacy page')));
 
