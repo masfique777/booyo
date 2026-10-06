@@ -40,7 +40,7 @@
   var DEFAULT_SETTINGS = {
     childName: '', ageBand: '4-5', guided: true, sessionLen: 0,
     activities: { letters: true, numbers: true, shapes: true, stories: true, memory: true, storymaker: true },
-    limitMin: 20, sound: true, speechRate: 0.85, voiceURI: '', voiceStyle: 'soft', fullscreen: true, setupDone: false,   // v3.3: softer voice by default
+    limitMin: 20, sound: true, speechRate: 0.85, voiceURI: '', voiceStyle: 'softwarm', fullscreen: true, setupDone: false,   // v3.4: Soft + warm by default
     fvOn: false, fvActive: 'mix', fvLessons: true,   // v3 Family Voices: off by default
     smGuided: true, smSayIt: true,                    // v3.1 Story Maker
     sgSingAlong: true, sgLyrics: true, sgVol: 'soft', // v3.2 Sing My Story
@@ -90,8 +90,14 @@
 
   /* ---------- speech ---------- */
   /* v3.3 "Booyo's voice": Soft (default) is quieter, a touch slower and lower; Normal is the v3.2 voice. */
-  var VOICE_STYLES = { soft: { vol: 0.75, rate: -0.05, pitch: 0.95, fx: 0.55 }, normal: { vol: 1, rate: 0, pitch: 1.05, fx: 1 } };
-  function voiceProf() { return VOICE_STYLES[settings.voiceStyle] || VOICE_STYLES.soft; }
+  /* Soft + warm (default): quieter, slower, picks the most natural system voice, splits long lines, slight prosody.
+     Soft: same quiet/slow base without the extras. Normal: the older full-volume voice. */
+  var VOICE_STYLES = {
+    soft:     { vol: 0.72, rate: 0.90, pitch: 0.97, fx: 0.50, abs: true,  warm: 1, phrases: false, prosody: false },
+    softwarm: { vol: 0.72, rate: 0.90, pitch: 0.98, fx: 0.50, abs: true,  warm: 2, phrases: true,  prosody: true  },
+    normal:   { vol: 1,    rate: 1.0,  pitch: 1.05, fx: 1,    abs: true,  warm: 0, phrases: false, prosody: false }
+  };
+  function voiceProf() { return VOICE_STYLES[settings.voiceStyle] || VOICE_STYLES.softwarm; }
   var Speech = {
     ok: typeof window.speechSynthesis !== 'undefined' && typeof window.SpeechSynthesisUtterance !== 'undefined',
     voices: [],
@@ -101,23 +107,29 @@
     },
     voice: function () {
       if (!this.voices.length) this.load();
-      var vs = this.voices, i;
+      var vs = this.voices, i, warmN = (voiceProf().warm || 0);
       for (i = 0; i < vs.length; i++) if (vs[i].voiceURI === settings.voiceURI) return vs[i];
-      /* Score voices: on-device (works offline) first, then natural/enhanced warm voices, then US/other English.
-         Novelty/robotic voices are pushed to the bottom. */
-      var pref = [/natural/i, /neural/i, /premium/i, /enhanced/i, /samantha/i, /\bava\b/i, /allison/i, /susan/i, /karen/i, /moira/i, /tessa/i, /serena/i,
-                  /google uk english female/i, /google us english/i, /aria/i, /jenny/i, /libby/i, /sonia/i, /zira/i, /hazel/i, /female/i];
-      var warm = /natural|neural|premium|enhanced|female|samantha|\bava\b|allison|susan|karen|moira|tessa|serena|aria|jenny|libby|sonia|zira|hazel/i;
+      /* Prefer the most natural on-device English voices (iOS Samantha/Ava/Karen/Serena/Moira; Android Neural2/Natural;
+         desktop Microsoft Aria/Jenny / Google UK English Female). Novelty and harsh male voices go last. */
+      var pref = [/neural2/i, /wavenet/i, /neural/i, /natural/i, /premium/i, /enhanced/i,
+                  /samantha/i, /\bava\b/i, /karen/i, /serena/i, /moira/i, /tessa/i, /allison/i, /susan/i,
+                  /\baria\b/i, /\bjenny\b/i, /google uk english female/i, /google us english/i,
+                  /libby/i, /sonia/i, /zira/i, /hazel/i, /female/i];
+      var warm = /neural2|wavenet|neural|natural|premium|enhanced|samantha|\bava\b|karen|serena|moira|tessa|allison|susan|\baria\b|\bjenny\b|female|libby|sonia|zira|hazel/i;
       var harsh = /\bmale\b|daniel|\balex\b|david|\bmark\b|\bguy\b|ryan|george|james|thomas|rishi|aaron|arthur/i;
       var odd = /compact|novelty|whisper|bad news|bells|boing|bubbles|cellos|zarvox|trinoids|albert|jester|organ|superstar|wobble|grandma|grandpa|eddy|flo\b|reed|rocko|sandy|shelley|junior|ralph|fred|kathy/i;
       var best = null, bestScore = -1e9;
       vs.forEach(function (v) {
-        var sc = 0;
+        var sc = 0, nm = v.name.replace(/female/ig, '');
         if (v.localService) sc += 100;
-        if (/en[-_]US/i.test(v.lang)) sc += 20; else if (/en[-_](GB|AU|CA|IE|NZ|IN)/i.test(v.lang)) sc += 10;
-        for (var p = 0; p < pref.length; p++) if (pref[p].test(v.name)) { sc += 60 - p * 2; break; }
+        if (/en[-_]US/i.test(v.lang)) sc += 20; else if (/en[-_](GB|AU|CA|IE|NZ|IN)/i.test(v.lang)) sc += 12;
+        for (var p = 0; p < pref.length; p++) if (pref[p].test(v.name)) { sc += 80 - p * 2; break; }
         if (odd.test(v.name)) sc -= 150;
-        if (settings.voiceStyle !== 'normal') { if (warm.test(v.name) && !/\bmale\b/i.test(v.name.replace(/female/ig, ''))) sc += 30; if (harsh.test(v.name.replace(/female/ig, ''))) sc -= 40; }
+        if (warmN) {
+          if (warm.test(v.name) && !/\bmale\b/i.test(nm)) sc += 30 * warmN;
+          if (harsh.test(nm)) sc -= 40 * warmN;
+          if (/neural2|wavenet|neural|natural|premium|enhanced/i.test(v.name)) sc += 25 * warmN;
+        }
         if (sc > bestScore) { bestScore = sc; best = v; }
       });
       return best;
@@ -139,6 +151,36 @@
       this.tts(text, opts);
       return null;
     },
+    phrases: function (text) {
+      var t = String(text || '').replace(/\s+/g, ' ').trim(); if (!t) return [];
+      var parts = t.split(/(?<=[.!?])\s+/).filter(Boolean), out = [];
+      parts.forEach(function (p) {
+        if (p.length <= 70 || !/,\s+/.test(p)) { out.push(p); return; }
+        var bits = p.split(/,\s+/), buf = '';
+        bits.forEach(function (b, bi) {
+          var piece = bi ? ', ' + b : b;
+          if (!buf) buf = b;
+          else if ((buf + piece).length <= 70) buf += piece;
+          else { out.push(buf.trim()); buf = b; }
+        });
+        if (buf.trim()) out.push(buf.trim());
+      });
+      return out.length ? out : [t];
+    },
+    prosody: function (phrase, vp) {
+      var p = { rate: vp.rate, pitch: vp.pitch };
+      if (!vp.prosody) return p;
+      var low = phrase.toLowerCase();
+      if (/\?\s*$/.test(phrase)) { p.pitch = Math.min(1.12, vp.pitch + 0.06); p.rate = Math.max(0.8, vp.rate - 0.02); }
+      else if (/great job|wonderful|you did it|awesome|hooray|super|well done|shabash|yay|amazing|beautiful/i.test(low)) {
+        p.pitch = Math.min(1.12, vp.pitch + 0.05); p.rate = Math.min(1.0, vp.rate + 0.02);
+      } else if (/once upon|story|page|the end|sleepy|lullaby|goodnight|softly/i.test(low)) {
+        p.pitch = Math.max(0.9, vp.pitch - 0.03); p.rate = Math.max(0.82, vp.rate - 0.03);
+      } else if (/try again|almost|nice try|have another go/i.test(low)) {
+        p.pitch = Math.max(0.9, vp.pitch - 0.02); p.rate = Math.max(0.84, vp.rate - 0.02);
+      }
+      return p;
+    },
     tts: function (text, opts) {
       opts = opts || {};
       if (text) { fvLog({ kind: 'tts', text: String(text) }); if (TEST) (FV.allTts = FV.allTts || []).push(String(text)); }
@@ -146,11 +188,23 @@
       if (!this.ok || !text) { setTimeout(fin, 50); return; }
       try {
         window.speechSynthesis.cancel();
-        var u = new SpeechSynthesisUtterance(String(text).replace(/\bBooyo\b/g, 'Boo-yoh'));   // say the name the right way
+        var vp = voiceProf(), raw = String(text).replace(/\bBooyo\b/g, 'Boo-yoh');
+        /* Soft + warm: break long lines into short phrases, then speak as ONE utterance with " ... " pauses
+           (multi-speak onend chains are flaky on many phones and in automated browsers). */
+        if (vp.phrases && !opts.onboundary) {
+          var parts = this.phrases(raw);
+          if (parts.length > 1) raw = parts.join(' ... ');
+        }
+        var u = new SpeechSynthesisUtterance(raw);
         var v = this.voice();
         if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
-        var vp = voiceProf();
-        u.rate = Math.max(0.55, speechRate() + vp.rate); u.pitch = vp.pitch; u.volume = vp.vol;
+        var pr = this.prosody(raw, vp);
+        var base = vp.abs ? pr.rate : (speechRate() + pr.rate);
+        if (vp.abs && settings.calm) base = Math.max(0.6, base - 0.1);
+        /* Parent "speech speed" slider still nudges absolute styles around their base. */
+        if (vp.abs && settings.speechRate) base = base * ((Number(settings.speechRate) || 0.85) / 0.85);
+        u.rate = Math.max(0.55, Math.min(1.2, base));
+        u.pitch = pr.pitch; u.volume = vp.vol;
         if (opts.onboundary) u.onboundary = opts.onboundary;
         u.onend = fin; u.onerror = fin;
         window.speechSynthesis.speak(u);
@@ -234,8 +288,9 @@
   var OPEN = {};
   var TILE_TONES = ['tone-teal', 'tone-sun', 'tone-sky', 'tone-mint'];
   function actTile(a, i) {
-    return h('button', { class: 'tile ' + TILE_TONES[i % TILE_TONES.length], 'data-act': a.id, 'aria-label': a.say, onclick: function () { Sound.pop(); OPEN[a.id](); } },
-      h('span', { class: 'tile-emoji' }, a.emoji), h('span', { class: 'tile-label' }, a.label));
+    var lab = a.id === 'storymaker' ? 'Make a Story' : a.label;
+    return h('button', { class: 'tile ' + TILE_TONES[i % TILE_TONES.length] + (a.id === 'storymaker' ? ' tone-sun' : ''), 'data-act': a.id, 'aria-label': a.say, onclick: function () { Sound.pop(); OPEN[a.id](); } },
+      h('span', { class: 'tile-emoji' }, a.emoji), h('span', { class: 'tile-label' }, lab));
   }
   /* v3.3 kid home: one big "Play with Booyo" (guided) button, at most 4 big tiles; everything else is behind "More" */
   function kidHome() {
@@ -259,12 +314,41 @@
     repeatFn = function () { Speech.say(greet); };
     Speech.say(greet);
   }
+  function kidSingSong() {
+    /* Sing a Song: pick a saved story to sing, or start Make a Story with a tip that singing comes after. */
+    var withSong = SM.stories.filter(function (x) { return x; });
+    if (!withSong.length) {
+      Speech.say(TX('sm_singtip'), { onend: function () { storyMaker(null); } });
+      return;
+    }
+    mode = 'kid'; enterKidGuards();
+    var tiles = withSong.slice().reverse().slice(0, 8).map(function (st, i) {
+      return h('button', { class: 'tile tone-sun', 'data-story': st.id, 'aria-label': 'Sing ' + st.title,
+        onclick: function () { Sound.pop(); songPicker(st, { parent: false, back: kidSingSong }); } },
+        h('span', { class: 'tile-emoji' }, '🎵' + (st.cover || '📖')), h('span', { class: 'tile-label' }, st.title));
+    });
+    tiles.push(h('button', { class: 'tile tone-teal', 'aria-label': 'Make a new story to sing',
+      onclick: function () { Sound.pop(); storyMaker(null); } },
+      h('span', { class: 'tile-emoji' }, '✨'), h('span', { class: 'tile-label' }, 'New story')));
+    show(h('main', { class: 'screen kid home-screen more-screen' },
+      kidBar({}),
+      h('h1', { class: 'hello sm-sing-hello' }, 'Sing a Song! 🎵'),
+      h('div', { class: 'tiles n' + Math.min(tiles.length, 4) }, tiles)), 'kidSing');
+    var say = TX('sm_singpick');
+    repeatFn = function () { Speech.say(say); };
+    Speech.say(say);
+  }
   function kidMore() {
     var acts = D.activities.filter(function (a) { return settings.activities[a.id]; }).slice(3);
     var say = TX('m_more');
+    var tiles = acts.map(function (a, i) { return actTile(a, i + 1); });
+    /* Sing a Song: always available from More (uses saved stories, or starts Make a Story) */
+    tiles.unshift(h('button', { class: 'tile tone-mint', id: 'singTile', 'aria-label': 'Sing a Song',
+      onclick: function () { Sound.pop(); kidSingSong(); } },
+      h('span', { class: 'tile-emoji' }, '🎵'), h('span', { class: 'tile-label' }, 'Sing a Song')));
     show(h('main', { class: 'screen kid home-screen more-screen' },
       kidBar({}),
-      h('div', { class: 'tiles n' + acts.length }, acts.map(function (a, i) { return actTile(a, i + 1); }))), 'kidMore');
+      h('div', { class: 'tiles n' + tiles.length }, tiles)), 'kidMore');
     repeatFn = function () { Speech.say(say); };
     Speech.say(say);
   }
@@ -632,7 +716,7 @@
     Speech.say(say);
   }
 
-  OPEN = { more: kidMore, letters: lettersMenu, numbers: numberGame, shapes: shapesGame, stories: storyList, memory: memoryGame, storymaker: function () { stopGuided('switched'); storyMaker(null); } };
+  OPEN = { more: kidMore, sing: kidSingSong, letters: lettersMenu, numbers: numberGame, shapes: shapesGame, stories: storyList, memory: memoryGame, storymaker: function () { stopGuided('switched'); storyMaker(null); } };
 
   /* ---------- screen time ---------- */
   function limitSeconds() { return settings.limitMin > 0 ? (Number(settings.limitMin) + (usage.bonusMin || 0)) * 60 : Infinity; }
@@ -771,7 +855,7 @@
   var PPAGE = 'menu';
   var PPAGES = [
     { id: 'child', icon: '👶', title: 'Child', sub: function (S) { return ((S.childName || '').trim() || 'No name yet') + ' · ages ' + band().replace('-', '–'); } },
-    { id: 'play', icon: '🎮', title: 'Play settings', sub: function (S) { return (S.guided !== false ? 'Guided mode' : 'Menu mode') + ' · ' + (S.limitMin ? S.limitMin + ' min a day' : 'no time limit') + ' · ' + (S.voiceStyle === 'normal' ? 'normal' : 'soft') + ' voice'; } },
+    { id: 'play', icon: '🎮', title: 'Play settings', sub: function (S) { return (S.guided !== false ? 'Guided mode' : 'Menu mode') + ' · ' + (S.limitMin ? S.limitMin + ' min a day' : 'no time limit') + ' · ' + ({ softwarm: 'soft + warm', soft: 'soft voice', normal: 'normal voice' }[S.voiceStyle || 'softwarm'] || 'soft + warm'); } },
     { id: 'voices', icon: '🎙️', title: 'Family Voices', sub: function (S) { return (S.fvOn ? 'On' : 'Off') + ' · ' + fvVoices.length + ' family voice' + (fvVoices.length === 1 ? '' : 's'); } },
     { id: 'stories', icon: '📚', title: 'My Stories', sub: function () { return SM.stories.length + ' saved stor' + (SM.stories.length === 1 ? 'y' : 'ies') + ' · songs'; } },
     { id: 'calm', icon: '🌙', title: 'Calm & Accessible', sub: function (S) { var on = []; if (S.calm) on.push('Calm'); if (S.schedule) on.push('Schedule'); if (S.bigTargets) on.push('Big buttons'); if (S.contrast) on.push('Contrast'); if (S.captions) on.push('Captions'); if (S.kbd) on.push('Keyboard'); if (S.scan) on.push('Switch'); return on.length ? on.join(' · ') : 'All off'; } },
@@ -848,8 +932,8 @@
     fs.addEventListener('change', function () { S.fullscreen = fs.checked; saveSettings(); toast('Saved ✓'); });
     var autoV = Speech.voice();
     var vRow = h('div', { class: 'seg', role: 'radiogroup', 'aria-label': 'Booyo\'s voice', id: 'voiceStyle' });
-    [['soft', '🌸 Soft (gentle)'], ['normal', '🔊 Normal']].forEach(function (o) {
-      var on = (S.voiceStyle || 'soft') === o[0];
+    [['softwarm', '🌸 Soft + warm'], ['soft', '🍃 Soft'], ['normal', '🔊 Normal']].forEach(function (o) {
+      var on = (S.voiceStyle || 'softwarm') === o[0];
       vRow.appendChild(h('button', { class: 'seg-btn' + (on ? ' on' : ''), role: 'radio', 'aria-checked': String(on), 'data-vstyle': o[0],
         onclick: function () { S.voiceStyle = o[0]; saveSettings(); toast('Saved ✓'); Sound.resume(); Speech.say(TX('s_test')); renderParent(); } }, o[1]));
     });
@@ -857,7 +941,13 @@
       Speech.ok ? null : h('p', { class: 'warn' }, 'This browser does not support speech. Try Chrome, Edge, or Safari.'),
       Speech.ok && noVoice() ? h('p', { class: 'warn' }, 'No English voice found on this device yet. Booyo will still guide with pictures, a pointing hand and glowing answers, but your child will hear no words. Install a voice in the device settings (Text-to-speech / Spoken Content).') : null,
       vRow,
-      h('p', { class: 'hint' }, (S.voiceStyle === 'normal' ? 'Normal: full volume and the regular speed.' : 'Soft (default): quieter, a little slower and lower, and Booyo picks a warmer voice when the device has one. Sound effects are softer too.')),
+      h('p', { class: 'hint' }, S.voiceStyle === 'normal'
+        ? 'Normal: full volume and the regular speed (the older Booyo voice).'
+        : (S.voiceStyle === 'soft'
+          ? 'Soft: quieter and a little slower. Booyo prefers a natural system voice when your device has one.'
+          : 'Soft + warm (default): quieter and slower, picks the most natural voice on this device, and speaks in short phrases. Sound effects are softer too.')),
+      h('p', { class: 'hint' }, 'Built-in voices depend on the phone or tablet — some sound more robotic than others. ',
+        h('b', {}, 'Family Voices sounds best:'), ' record the 14 most-heard lines (greeting, name, praise, try-again, start, break, goodbye) and Booyo will use your family\'s voice instead.'),
       h('div', { class: 'btn-row' }, h('button', { class: 'pbtn ghost', id: 'testVoice', onclick: function () { Sound.resume(); Speech.say(TX('s_test')); } }, '▶ Test voice')),
       h('label', { class: 'toggle' }, snd, h('span', { class: 'toggle-ui' }), h('span', {}, 'Happy sound effects')),
       moreOpts('voiceMore',
@@ -942,7 +1032,7 @@
     var head = h('header', { class: 'phead' },
       h('div', { class: 'pbrand' }, h('img', { src: 'icons/icon-192.png', alt: '', width: '192', height: '192' }), h('div', {}, h('h1', {}, 'Booyo'), h('p', {}, 'Parent corner'))),
       startBtn);
-    var foot = h('footer', { class: 'pfoot' }, 'Booyo v3.3.1 · works offline · made for home learning · Made by Savir and his dad · ',
+    var foot = h('footer', { class: 'pfoot' }, 'Booyo v3.4.0 · works offline · made for home learning · Made by Savir and his dad · ',
       h('a', { href: 'privacy.html', target: '_blank', rel: 'noopener', id: 'footPrivacy' }, 'Privacy'));
     if (PPAGE === 'menu') {
       var menu = h('nav', { class: 'pmenu', 'aria-label': 'Parent corner sections' }, PPAGES.map(function (pg) {
@@ -1232,9 +1322,10 @@
       }
     }
     if (useStory) list.push('story');
-    // v3.1: Make a Story takes the read-aloud story's place on alternate sessions (or the last slot when stories are off)
+    // v3.4: Make a Story more often — most sessions get it (about 2 of every 3), or the last slot when stories are off
     if (A.storymaker !== false && settings.smGuided !== false && n >= 2) {
-      if (useStory) { if ((Math.floor(d.getTime() / 86400000) + todays) % 2 === 0) list[list.length - 1] = 'storymaker'; }
+      var wantSm = ((Math.floor(d.getTime() / 86400000) + todays) % 3) !== 1;
+      if (useStory) { if (wantSm) list[list.length - 1] = 'storymaker'; }
       else if (list.length >= 2) list[list.length - 1] = 'storymaker';
       else list.push('storymaker');
     }
@@ -3057,7 +3148,8 @@
         h('div', { class: 'sm-steps', role: 'img', 'aria-label': 'Step ' + (si + 1) + ' of 4' }, steps.map(function (s, i) {
           return h('span', { class: 'sm-step' + (i < si ? ' done' : i === si ? ' now' : '') }, SM_STEP_ICON[s]);
         })),
-        h('h2', { class: 'sm-q' }, SM_PROMPT[step]));
+        h('h2', { class: 'sm-q' }, SM_PROMPT[step]),
+        h('p', { class: 'sm-tap-hint', 'aria-hidden': 'true' }, '👆 Tap one'));
       smScreen([head, pages.length ? smStrip(pages, -1) : null, grid], 'sm-' + step);
       var prompt = function () { talk(TX('sm_ask_' + step), '👆', idleKick); };
       setRepeat(prompt);
@@ -3143,13 +3235,14 @@
     var guided = !!(env.guided && G.active), done = env.done, first = env.first;
     env.first = false;
     var strip = smStrip(smBook(rec), -1);
-    var again = h('button', { class: 'bigbtn green sm-again', id: 'smAgain', 'aria-label': 'Read it again' }, '📖');
-    var sing = h('button', { class: 'bigbtn sg-btn', id: 'sgSing', 'aria-label': 'Sing it!' }, '🎵');
-    var row = h('div', { class: 'row sm-row' }, again, sing), nextBtn = null;
+    var sing = h('button', { class: 'sm-sing-primary', id: 'sgSing', 'aria-label': 'Sing it!' },
+      h('span', { class: 'sm-sing-ic', 'aria-hidden': 'true' }, '🎵'), h('span', {}, 'Sing it!'));
+    var again = h('button', { class: 'sm-again-secondary', id: 'smAgain', 'aria-label': 'Read it again' }, '📖 Read again');
+    var row = h('div', { class: 'row sm-row sm-cover-actions' }, sing, again), nextBtn = null;
     if (guided) row.appendChild(nextBtn = h('button', { class: 'bigbtn blue sm-next', id: 'smNext', 'aria-label': 'Keep playing' }, ARROW_R()));
     else {
-      row.appendChild(h('button', { class: 'bigbtn blue', 'aria-label': 'Make another story', onclick: function () { Sound.pop(); storyMaker(null); } }, '🔁'));
-      row.appendChild(h('button', { class: 'bigbtn blue', 'aria-label': 'Home', onclick: function () { Sound.pop(); kidHome(); } }, '🏠'));
+      row.appendChild(h('button', { class: 'sm-again-secondary', 'aria-label': 'Make another story', onclick: function () { Sound.pop(); storyMaker(null); } }, '✨ New story'));
+      row.appendChild(h('button', { class: 'kbtn home', 'aria-label': 'Home', onclick: function () { Sound.pop(); kidHome(); } }, '🏠'));
     }
     smScreen([smCoverEl(rec), row, strip], 'sm-cover');
     if (first) {
@@ -3215,10 +3308,11 @@
         h('div', { class: 'sm-shelf-meta' }, h('b', {}, s.title, s.song ? h('span', { class: 'sg-badge-t', title: 'Has a song' }, ' 🎵') : null),
           h('small', {}, smAuthor(s.author) + ' · ' + fmtTime(new Date(s.t).toISOString()) + (s.clip ? ' · 🎤 with voice' : '') +
             (s.song ? ' · 🎵 ' + sgStyle(s.song.style).label + ' song' + (s.song.clip ? ' with singing' : '') : ''))),
-        h('div', { class: 'btn-row' },
-          h('button', { class: 'pbtn small sm-open', 'aria-label': 'Open ' + s.title, onclick: function () { smBookView(s.id); } }, '📖 Open'),
-          h('button', { class: 'pbtn small ghost sm-play', 'aria-label': 'Play ' + s.title, onclick: function () { Sound.resume(); smUnlockAudio(); smRead(s, function () {}, null); } }, '▶ Play'),
-          h('button', { class: 'pbtn small sm-sing', 'aria-label': 'Sing ' + s.title, onclick: function () { songPicker(s, { parent: true, back: smBackToShelf }); } }, '🎵 Sing it!'),
+        h('div', { class: 'btn-row sm-shelf-primary' },
+          h('button', { class: 'pbtn sm-play', 'aria-label': 'Play ' + s.title, onclick: function () { Sound.resume(); smUnlockAudio(); smRead(s, function () {}, null); } }, '▶ Play story'),
+          h('button', { class: 'pbtn sm-sing', 'aria-label': 'Sing ' + s.title, onclick: function () { songPicker(s, { parent: true, back: smBackToShelf }); } }, '🎵 Sing it!')),
+        h('div', { class: 'btn-row sm-shelf-more' },
+          h('button', { class: 'pbtn small ghost sm-open', 'aria-label': 'Open ' + s.title, onclick: function () { smBookView(s.id); } }, '📖 Open'),
           s.song ? h('button', { class: 'pbtn small ghost sm-song', 'aria-label': 'Play the song of ' + s.title, onclick: function () { sgPlay(s, s.song.style, { parent: true, back: smBackToShelf }); } }, '▶ Play song') : null,
           h('button', { class: 'pbtn small ghost sm-export', 'aria-label': 'Export ' + s.title, onclick: function () { smExport(s); } }, '📤 Export'),
           h('button', { class: 'pbtn small ghost danger sm-del', 'aria-label': 'Delete ' + s.title, onclick: function () {
@@ -3554,7 +3648,9 @@
       window.speechSynthesis.cancel();
       var st = SG_STYLES[SG.cur ? SG.cur.style : 'lullaby'], u = new SpeechSynthesisUtterance(String(text).replace(/\bBooyo\b/g, 'Boo-yoh')), v = Speech.voice();
       if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
-      var vp = voiceProf(); u.rate = Math.max(0.6, st.rate + vp.rate - (settings.calm ? 0.12 : 0)); u.pitch = Math.max(0.6, st.pitch + (vp.pitch - 1.05)); u.volume = vp.vol;
+      var vp = voiceProf();
+      var r0 = vp.abs ? Math.min(1.05, Math.max(0.6, st.rate * 0.95)) : Math.max(0.6, st.rate + vp.rate - (settings.calm ? 0.12 : 0));
+      u.rate = r0; u.pitch = Math.max(0.6, st.pitch + (vp.pitch - 1.05)); u.volume = vp.vol;
       window.speechSynthesis.speak(u);
     } catch (e) { /* no voice */ }
   }
@@ -3840,7 +3936,7 @@
   }
 
   /* easier tapping: "forgiving" accepts on touch-down; "hold" needs a ~0.5 s press. Keyboard/switch clicks (detail 0) always pass. */
-  var TAP_SEL = '.sg-ctrl:not(.sg-mic), .choice, .count-item, .mem-card, .lc-emoji, .story-art, .play-booyo, .tile, .menu-btn, .letter-tile, .story-cover, .bigbtn, .play-btn, .wake-btn, .skip-btn';
+  var TAP_SEL = '.sg-ctrl:not(.sg-mic), .choice, .count-item, .mem-card, .lc-emoji, .story-art, .play-booyo, .tile, .menu-btn, .letter-tile, .story-cover, .bigbtn, .sm-sing-primary, .sm-again-secondary, .play-btn, .wake-btn, .skip-btn';
   var Tap = { el: null, t: 0 };
   function tapOn() { return mode === 'kid' && (settings.tapMode === 'touchdown' || settings.tapMode === 'hold'); }
   function tapTarget(e) { var el = e.target && e.target.closest ? e.target.closest(TAP_SEL) : null; return el && app.contains(el) && !el.disabled ? el : null; }
@@ -3861,7 +3957,7 @@
   }, true);
 
   /* keyboard: arrows move between controls; the keyboard helper focuses the main control on each new screen */
-  var KBD_FIRST = ['.play-btn', '.wake-btn', '.sg-style', '.sg-clap', '.sg-again', '.sm-choice:not([disabled])', '.choice:not([disabled])', '.count-item:not(.counted)', '.mem-card:not(.done)', '.lc-emoji', '.sm-mic', '.sm-again', '.play-booyo', '.tile', '.menu-btn', '.letter-tile', '.story-cover', '.story-art', '.bigbtn:not([disabled])'];
+  var KBD_FIRST = ['.play-btn', '.wake-btn', '.sg-style', '.sg-clap', '.sg-again', '.sm-choice:not([disabled])', '.choice:not([disabled])', '.count-item:not(.counted)', '.mem-card:not(.done)', '.lc-emoji', '.sm-mic', '.sm-sing-primary', '.sm-again', '.play-booyo', '.tile', '.menu-btn', '.letter-tile', '.story-cover', '.story-art', '.bigbtn:not([disabled])'];
   function kbdFocusFirst() {
     if (!settings.kbd || settings.scan || mode !== 'kid' || document.querySelector('.gate-overlay')) return;
     for (var i = 0; i < KBD_FIRST.length; i++) { var el = app.querySelector(KBD_FIRST[i]); if (el && el.offsetParent !== null) { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } return; } }
@@ -3889,7 +3985,7 @@
   document.addEventListener('keyup', function (e) { if (settings.scan && mode === 'kid' && (e.key === ' ' || e.key === 'Spacebar')) e.preventDefault(); }, true);
 
   /* single-switch scanning: highlight each choice in turn */
-  var SCAN_SEL = '.sg-ctrl, .sg-btn, .sg-back, .sg-other, .play-btn, .wake-btn, .choice:not([disabled]), .count-item:not(.counted), .mem-card:not(.done):not(.open), .lc-emoji, .story-art, .sm-mic, .skip-btn, .sm-again, .sm-next, .play-booyo, .tile, .menu-btn, .letter-tile, .story-cover, .bigbtn:not([disabled])';
+  var SCAN_SEL = '.sg-ctrl, .sg-btn, .sg-back, .sg-other, .play-btn, .wake-btn, .choice:not([disabled]), .count-item:not(.counted), .mem-card:not(.done):not(.open), .lc-emoji, .story-art, .sm-mic, .skip-btn, .sm-sing-primary, .sm-again, .sm-next, .play-booyo, .tile, .menu-btn, .letter-tile, .story-cover, .bigbtn:not([disabled])';
   var Scan = { t: 0, cur: null };
   function scanMs() { return TEST && QS.tlscan ? Number(QS.tlscan) : Math.round((Number(settings.scanSpeed) || 1.5) * 1000); }
   function scanItems() { return Array.prototype.filter.call(app.querySelectorAll(SCAN_SEL), function (el) { return !el.disabled && el.offsetParent !== null; }); }
@@ -3947,7 +4043,7 @@
   if (!settings.setupDone) parentMode(); else if (settings.guided !== false) guidedStart(); else splash();
 
   // tiny hook for automated tests (read-only)
-  window.__TL = { go: function (s) { stopGuided('switched'); ({ parent: parentMode, home: kidHome, more: kidMore, letters: lettersMenu, explore: lettersExplore, find: findLetterGame, numbers: numberGame, shapes: shapesGame, stories: storyList, memory: memoryGame, brk: showBreak, storymaker: function () { storyMaker(null); } })[s](); },
+  window.__TL = { go: function (s) { stopGuided('switched'); ({ parent: parentMode, home: kidHome, more: kidMore, sing: kidSingSong, letters: lettersMenu, explore: lettersExplore, find: findLetterGame, numbers: numberGame, shapes: shapesGame, stories: storyList, memory: memoryGame, brk: showBreak, storymaker: function () { storyMaker(null); } })[s](); },
                   sm: function () { return { ready: SM.ready, err: SM.err, n: SM.stories.length, trimmed: SM.trimmed, micBlocked: SM.micBlocked, last: SM.lastSaved || '',
                     stories: SM.stories.map(function (x) { return { id: x.id, t: x.t, title: x.title, author: x.author, cover: x.cover, picks: x.picks, pages: x.pages.map(function (p) { return p.text; }), clip: !!x.clip, dur: x.dur,
                       song: x.song ? { style: x.song.style, clip: !!x.song.clip, clipAt: x.song.clipAt, claps: x.song.claps } : null }; }) }; },

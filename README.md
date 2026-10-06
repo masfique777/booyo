@@ -1,9 +1,24 @@
-# Booyo (v3.3.1)
+# Booyo (v3.4.0)
 
 Booyo (say "BOO-yoh") is the app, and Booyo the owl is its guide.
 
 A small, offline, ad-free learning app for ages 2–6, built so a child who **can't read yet** can play on their own.
 It's meant for learning at home (vacations, homeschooling, a quiet half hour).
+
+## What's new in v3.4: a warmer voice, and easier stories & songs
+- **Softer, warmer built-in voice.** Parent corner → Play settings → **Booyo's voice** now has three choices:
+  **🌸 Soft + warm** (new default), **🍃 Soft**, and **🔊 Normal**. Soft + warm speaks at about 72% volume and rate 0.90,
+  prefers the most natural system voice on the device (iOS Samantha/Ava/Karen/Serena/Moira; Android Neural2/Natural;
+  desktop Microsoft Aria/Jenny or Google UK English Female), splits long lines into short phrases with small gaps, and
+  slightly varies pitch for praise, questions and story lines. Soft is the same quiet base without phrase-splitting.
+  Honest note: built-in TTS quality still depends on the phone or tablet — some devices sound more robotic than others.
+  **Family Voices still sounds best:** record the 14 most-heard lines and Booyo uses your family's voice instead.
+- **Make a Story is easier to find and use.** On the kid home, **✨ Make a Story** is one of the big main tiles (with ABC and 123).
+  **More** adds a big **🎵 Sing a Song** tile: if your child has saved stories it opens a picker to sing one; if not, Booyo
+  starts Make a Story and says singing comes after. Story Maker choices are larger and more colorful, with a clear "Tap one"
+  hint. After a story, a huge purple **Sing it!** button is the main action (Read again is secondary). In Parent corner →
+  My Stories, **Play story** and **Sing it!** are equally clear big buttons. Guided mode includes Make a Story more often,
+  with a friendlier intro ("Want to make your own story?").
 
 ## What's new in v3.3.1: privacy page and permanent web address
 - **Privacy page** (`privacy.html`): plain-words privacy promise for parents (no accounts, ads, analytics or tracking; everything stays on
@@ -224,7 +239,7 @@ only allow sound after a tap. To get back to the Parent corner, tap the small �
 
 ## Files
 - `index.html`: entry point
-- `app.js`: logic (v2 guided mode is in the "v2 GUIDED MODE" section, Family Voices in "v3 FAMILY VOICES", Make a Story and Calm & Accessible in the "v3.1" sections, Sing My Story in "v3.2 SING MY STORY"); `sw.js`: offline cache (`booyo-v3.3.1`); `privacy.html`: privacy page; `data.js`: letters, stories, ideas (easy to edit); `style.css`: styles
+- `app.js`: logic (v2 guided mode is in the "v2 GUIDED MODE" section, Family Voices in "v3 FAMILY VOICES", Make a Story and Calm & Accessible in the "v3.1" sections, Sing My Story in "v3.2 SING MY STORY"); `sw.js`: offline cache (`booyo-v3.4.0`); `privacy.html`: privacy page; `data.js`: letters, stories, ideas (easy to edit); `style.css`: styles
 
 All data stays in this browser: localStorage (keys `tl_settings`, `tl_progress`, `tl_usage`, `tl_sessions`, `tl_voices`, `tl_sm_trimmed`) and, for Family Voices recordings and saved stories, IndexedDB (`booyo-voices`, stores `clips` and `stories`; a story's song is saved in its `song` field). There are no accounts
 and no network calls (a Content-Security-Policy blocks outside connections). No AI or cloud services are used. Note that some

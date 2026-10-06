@@ -2,7 +2,7 @@
    Caches every file of the app on first visit so it keeps working with no internet (airplane mode).
    Same-origin only: requests to any other site are never touched or cached.
    Bump CACHE when you change the app so devices pick up the new files. */
-var CACHE = 'booyo-v3.3.1';
+var CACHE = 'booyo-v3.4.0';
 var ASSETS = [
   './', './index.html', './app.js', './data.js', './style.css', './manifest.json', './privacy.html',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-192.png', './icons/icon-maskable-512.png',

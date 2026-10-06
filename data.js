@@ -3,10 +3,10 @@ window.TL_DATA = {
   activities: [
     { id: 'letters', emoji: '🔤', label: 'ABC',    say: 'Letters!',            bg: 'linear-gradient(135deg,#ff8a80,#ff5252)' },
     { id: 'numbers', emoji: '🔢', label: '123',    say: 'Numbers!',            bg: 'linear-gradient(135deg,#82b1ff,#448aff)' },
+    { id: 'storymaker', emoji: '✨', label: 'Make a Story', say: 'Make a story!', bg: 'linear-gradient(135deg,#ffd54f,#ff8a65)' },
     { id: 'shapes',  emoji: '🔺', label: 'Shapes', say: 'Shapes and colors!',  bg: 'linear-gradient(135deg,#ffe57f,#ffc400)' },
     { id: 'stories', emoji: '📖', label: 'Stories',say: 'Stories!',            bg: 'linear-gradient(135deg,#b9f6ca,#00c853)' },
-    { id: 'memory',  emoji: '🃏', label: 'Match',  say: 'Matching game!',      bg: 'linear-gradient(135deg,#ea80fc,#aa00ff)' },
-    { id: 'storymaker', emoji: '✨', label: 'Make a Story', say: 'Make a story!', bg: 'linear-gradient(135deg,#ffab91,#ff7043)' }
+    { id: 'memory',  emoji: '🃏', label: 'Match',  say: 'Matching game!',      bg: 'linear-gradient(135deg,#ea80fc,#aa00ff)' }
   ],
 
   /* v3.1 Story Maker: the child picks one picture per step and Booyo tells the story.
@@ -95,7 +95,7 @@ window.TL_DATA = {
     g_ann_colors: ['gplay', "Let's find colors!"],
     g_ann_story: ['stories', "Story time!|Let's read {title}."],
     g_ann_memory: ['gplay', "Let's play a matching game!|Find two the same!"],
-    g_ann_sm:  ['storymaker', "Let's make a story together!"],
+    g_ann_sm:  ['storymaker', "Want to make your own story?|Let's make one together!"],
     g_ann_play: ['gplay', "Let's play!"],
     g_go:      ['gplay', "Let's go!"],
     g_did:     ['praise', ['You did it!', 'Hooray! You did it!', 'Super job!', 'Yay! Well done!']],
@@ -129,7 +129,7 @@ window.TL_DATA = {
     s_test:    ['session', 'Hi {name}!|Let us learn and play!'],
     /* menus & games */
     m_home:    ['menus', 'Hi {name}!|What do you want to play?'],
-    m_more:    ['menus', 'More games!|Tap a picture.'],
+    m_more:    ['menus', 'More games!|Make a story, sing a song, or pick a picture.'],
     m_again:   ['menus', 'Play again, or go home?'],
     m_letters: ['menus', 'Letters!|Tap A B C to learn letters.|Tap the magnifying glass to find letters.'],
     m_tapletter: ['menus', 'Tap a letter!'],
@@ -165,10 +165,12 @@ window.TL_DATA = {
     st_ok:     ['stories', 'It was {answer}!'],
     /* Make a Story */
     sm_hello:  ['storymaker', "Let's make a story!"],
-    sm_ask_who: ['storymaker', 'Who is in the story?|Tap a picture.'],
-    sm_ask_where: ['storymaker', 'Where do they go?|Tap a picture.'],
-    sm_ask_what: ['storymaker', 'What happens?|Tap a picture.'],
-    sm_ask_end: ['storymaker', 'How does it end?|Tap a picture.'],
+    sm_singtip: ['storymaker', "First let's make a story!|Then you can sing it."],
+    sm_singpick: ['song', "Pick a story to sing!"],
+    sm_ask_who: ['storymaker', 'Who is in the story?|Tap one big picture!'],
+    sm_ask_where: ['storymaker', 'Where do they go?|Tap one big picture!'],
+    sm_ask_what: ['storymaker', 'What happens?|Tap one big picture!'],
+    sm_ask_end: ['storymaker', 'How does it end?|Tap one big picture!'],
     sm_p_who:  ['storymaker', 'Once upon a time, there was {smwho}.'],
     sm_p_where: ['storymaker', '{smshort} {smgo}.'],
     sm_p_what: ['storymaker', 'There, {smshort} {smdid}.'],
@@ -183,8 +185,8 @@ window.TL_DATA = {
     sm_by:     ['storymaker', 'A story by {name}.'],
     sm_by0:    ['storymaker', 'A story by a little author.'],
     sm_theend: ['storymaker', 'The end!'],
-    sm_cover:  ['storymaker', 'Tap the book to hear it again, the music note to sing it, or the arrow to keep playing!'],
-    sm_again:  ['storymaker', 'Here is your story!|Read it again, or sing it!'],
+    sm_cover:  ['storymaker', 'Tap Sing it to make a song, or the book to hear it again!'],
+    sm_again:  ['storymaker', 'Here is your story!|Sing it, or read it again!'],
     /* Sing My Story (the sung lines themselves come from "song" above) */
     sg_pick:   ['song', "Let's sing your story!|How should we sing it?|A sleepy lullaby, a marching band, or a silly bounce?"],
     sg_again:  ['song', 'Do you want to sing again?'],

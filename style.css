@@ -611,3 +611,37 @@ body.a11y-contrast .tile.tone-more { border-style: solid !important; }
 .more-screen .tiles { margin-block: auto; }
 .plink, .pfoot a { color: #00777a; font-weight: 800; }
 body.a11y-contrast .plink, body.a11y-contrast .pfoot a { color: #000; text-decoration: underline; }
+
+/* =====================================================================
+   v3.4 warmer Story Maker + Sing it, Soft + warm voice card
+   ===================================================================== */
+.sm-choices { gap: clamp(16px, 3vw, 28px); margin-top: 6px; }
+.sm-choices .choice, .sm-choice { min-height: clamp(170px, 30vh, 280px); border-radius: 28px; padding: 14px 10px;
+  background: linear-gradient(180deg, #fff, #fff8e7) !important; border: 5px solid #ffe082; box-shadow: 0 8px 0 rgba(0,90,92,.12); }
+.sm-choice:nth-child(1) { border-color: #80deea; background: linear-gradient(180deg, #e0f7fa, #fff) !important; }
+.sm-choice:nth-child(2) { border-color: #ffcc80; background: linear-gradient(180deg, #fff3e0, #fff) !important; }
+.sm-choice:nth-child(3) { border-color: #ce93d8; background: linear-gradient(180deg, #f3e5f5, #fff) !important; }
+.sm-choice:nth-child(4) { border-color: #a5d6a7; background: linear-gradient(180deg, #e8f5e9, #fff) !important; }
+.sm-e { font-size: clamp(72px, 14vw, 130px); }
+.sm-l { font-size: clamp(20px, 3.2vw, 30px); color: var(--teal-ink); }
+.sm-q { color: var(--teal-ink); font-size: clamp(26px, 5vw, 40px); }
+.sm-tap-hint { margin: 0; font-size: clamp(18px, 3vw, 24px); font-weight: 800; color: #00838f; text-align: center; }
+.sm-cover-actions { flex-wrap: wrap; gap: 14px; justify-content: center; max-width: 640px; margin: 0 auto; }
+.sm-sing-primary { width: min(100%, 520px); display: flex; align-items: center; justify-content: center; gap: 14px; border: 0; cursor: pointer;
+  border-radius: 36px; padding: clamp(16px, 3vh, 26px) clamp(22px, 5vw, 40px); background: linear-gradient(180deg, #ab47bc, #6a1b9a); color: #fff;
+  font: 900 clamp(28px, 5.4vw, 48px)/1.1 var(--font); box-shadow: 0 9px 0 #4a148c; -webkit-tap-highlight-color: transparent; }
+.sm-sing-primary .sm-sing-ic { font-size: 1.2em; }
+.sm-sing-primary:active { transform: translateY(5px); box-shadow: 0 4px 0 #4a148c; }
+.sm-again-secondary { border: 0; cursor: pointer; border-radius: 999px; padding: 14px 26px; background: #fff; color: var(--teal-ink);
+  font: 800 clamp(18px, 3vw, 24px)/1.1 var(--font); box-shadow: 0 5px 0 rgba(0,90,92,.14); border: 3px solid #b2dfdb; }
+.sm-again-secondary:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,90,92,.14); }
+.sm-shelf-item { grid-template-columns: 70px 1fr; }
+.sm-shelf-primary { grid-column: 1 / -1; display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.sm-shelf-primary .sm-play, .sm-shelf-primary .sm-sing { flex: 1; min-width: 140px; font-size: 18px; padding: 14px 18px; border-radius: 16px; font-weight: 900; }
+.sm-shelf-primary .sm-play { background: #00695c; color: #fff; }
+.sm-shelf-primary .sm-sing { background: #8e24aa; color: #fff; }
+.sm-shelf-more { grid-column: 1 / -1; }
+.sm-sing-hello { color: var(--teal-ink); }
+#voiceStyle .seg-btn { font-size: 15px; padding: 10px 12px; }
+body.a11y-contrast .sm-sing-primary, body.a11y-contrast .sm-shelf-primary .sm-play, body.a11y-contrast .sm-shelf-primary .sm-sing { background: #000 !important; color: #fff !important; box-shadow: none; border: 4px solid #000; }
+body.a11y-contrast .sm-choice { border-color: #000 !important; background: #fff !important; }
